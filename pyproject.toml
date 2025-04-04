@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "sleuthkit-mactime-py"
+version = "1.0.0"
+description = "A Python reimplementation of mactime.pl from The Sleuth Kit®"
+authors = ["sumeshi <sum3sh1@protonmail.com>"]
+readme = "README.md"
+packages = [{include = "sleuthkit_mactime"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

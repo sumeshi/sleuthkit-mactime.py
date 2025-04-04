@@ -1,0 +1,66 @@
+name: publish-release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    outputs:
+      version: ${{ steps.create_tag.outputs.version }}
+    strategy:
+      matrix:
+        python-version: ['3.11']
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: install python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          pip install uv
+
+      - name: Get version
+        id: get_version
+        run: |
+          version=$(cat pyproject.toml | grep version | head -1 | awk -F '"' '{print $2}')
+          echo "version=$version" >> $GITHUB_ENV
+        shell: bash
+
+      - name: build
+        run: |
+          uv add --dev nuitka
+          uv run python -m nuitka --standalone --onefile --follow-imports -o mactime-$version-windows-x64.exe --output-dir=dist --assume-yes-for-downloads src/mactime.py
+        shell: bash
+      
+      - name: verify
+        run: |
+          dist/mactime-$version-windows-x64.exe -h
+        shell: bash
+      
+      - name: create tag
+        id: create_tag
+        if: startsWith(github.ref, 'refs/heads/main')
+        run: |
+          git tag "v$version"
+          git push origin "v$version"
+          echo "version=$version" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+
+      - name: create release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.create_tag.outputs.version }}
+          files: dist/mactime-${{ steps.create_tag.outputs.version }}-windows-x64.exe
+          name: Release v${{ steps.create_tag.outputs.version }}
+          body: 'This release was automatically created by GitHub Actions.'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
