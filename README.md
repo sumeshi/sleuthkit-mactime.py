@@ -37,3 +37,5 @@ $ python mactime.py
 
 # License
 This program is licensed under the same terms as The Sleuth Kit, specifically the Common Public License 1.0 (CPL 1.0). For additional details, please refer to the original license statements included with The Sleuth Kit.
+
+[The Sleuth Kit](https://github.com/sleuthkit/sleuthkit)
